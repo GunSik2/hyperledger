@@ -108,6 +108,7 @@ $ docker-compose.exe stop
 cd ~/Workspace/blockchain
 mkdir -p github.com/hyperledger; cd github.com/hyperledger
 git clone https://github.com/hyperledger/fabric.git
+git checkout v0.6.1-preview
 ```
 - 체인코드 빌드
 ```
@@ -216,11 +217,24 @@ POST 192.168.99.100:7050/chaincode
 ==> 
 {
   "jsonrpc": "2.0",
-  "error": {
-    "code": -32003,
-    "message": "Query failure",
-    "data": "Error when querying chaincode: Error:Failed to execute transaction or query(Timeout expired while executing transaction)"
+  "result": {
+    "status": "OK",
+    "message": "90"
   },
   "id": 5
 }
 ```
+
+- Another image creation to test with multiple nodes
+```
+$ console docker exec -it blockchain_membersrvc_1 bash
+root@f772057996d8:/opt/gopath/src/github.com/hyperledger/fabric# vi membersrvc/membersrvc.yaml
+root@f772057996d8:/opt/gopath/src/github.com/hyperledger/fabric# vi peer/core.yaml
+
+$ docker commit blockchain_membersrvc_1 hyperledger/fabric-membersrvc:red
+$ vi ~/Workspace/blockchain/docker-compose.yml
+membersrvc:
+  image: hyperledger/fabric-membersrvc:red
+```
+
+## 운영 모드로 스마트 컨트랙 코드(체인코드) 배치
