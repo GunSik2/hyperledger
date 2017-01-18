@@ -120,6 +120,32 @@ go build
 docker-machine ls // check ip
 CORE_CHAINCODE_ID_NAME=mycc CORE_PEER_ADDRESS=192.168.99.100:7051 ./chaincode_example02
 ```
+- Source Code
+```
+func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	A = args[0]; B = args[2]
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+}
+
+func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+	A = args[0]; B = args[2]
+  Avalbytes, err := stub.GetState(A)
+  Aval, _ = strconv.Atoi(string(Avalbytes))
+  Bvalbytes, err := stub.GetState(B)
+  Aval, _ = strconv.Atoi(string(Bvalbytes))  
+	Aval = Aval - X
+	Bval = Bval + X  
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))  
+}
+
+func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+  A = args[0]
+  Avalbytes, err := stub.GetState(A)
+	return Avalbytes, nil
+}
+```
 ## REST API 를 통한 테스트
 - 로그인
 ```
