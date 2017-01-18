@@ -164,6 +164,7 @@ POST 192.168.99.100:7050/chaincode
 ```
 
 - Invoke
+  - a - 10 / b + 10
 ```
 POST 192.168.99.100:7050/chaincode
 {
