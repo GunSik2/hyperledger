@@ -102,4 +102,124 @@ vp0_1         | 06:09:52.581 [nodeCmd] func1 -> DEBU 011 Registering validator w
 $ docker-compose.exe stop
 ```
 
+# 개발 모드로 스마트 컨트랙 코드(체인코드) 작성
 
+```
+cd ~/Workspace/blockchain
+mkdir -p github.com/hyperledger; cd github.com/hyperledger
+git clone https://github.com/hyperledger/fabric.git
+```
+- 체인코드 빌드
+```
+cd $GOPATH/src/github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02
+go build
+```
+-체인코드 실행
+```
+docker-machine ls // check ip
+CORE_CHAINCODE_ID_NAME=mycc CORE_PEER_ADDRESS=192.168.99.100:7051 ./chaincode_example02
+```
+## REST API 를 통한 테스트
+- 로그인
+```
+POST 192.168.99.100:7050/registrar
+{
+"enrollId": "admin",
+"enrollSecret": "Xurw3yU9zI0l"
+}
+
+==> 
+{
+  "OK": "Login successful for user 'admin'."
+}
+```
+
+- 체인코드 디플로이
+```
+POST 192.168.99.100:7050/chaincode
+{
+"jsonrpc": "2.0",
+"method": "deploy",
+"params": {
+"type": 1,
+"chaincodeID":{
+"name": "mycc"
+},
+"ctorMsg": {
+"args":["init", "a", "100", "b", "200"]
+},
+"secureContext": "admin"
+},
+"id": 1
+}
+==> 
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "status": "OK",
+    "message": "mycc"
+  },
+  "id": 1
+}
+```
+
+- Invoke
+```
+POST 192.168.99.100:7050/chaincode
+{
+"jsonrpc": "2.0",
+"method": "invoke",
+"params": {
+"type": 1,
+"chaincodeID":{
+"name":"mycc"
+},
+"ctorMsg": {
+"args":["invoke", "a", "b", "10"]
+},
+"secureContext": "admin"
+},
+"id": 3
+}
+
+==> 
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "status": "OK",
+    "message": "117ca387-6613-49ed-b324-d52031b36cef"
+  },
+  "id": 3
+}
+```
+
+- Query
+```
+POST 192.168.99.100:7050/chaincode
+{
+"jsonrpc": "2.0",
+"method": "query",
+"params": {
+"type": 1,
+"chaincodeID":{
+"name":"mycc"
+},
+"ctorMsg": {
+"args":["query", "a"]
+},
+"secureContext": "admin"
+},
+"id": 5
+}
+
+==> 
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32003,
+    "message": "Query failure",
+    "data": "Error when querying chaincode: Error:Failed to execute transaction or query(Timeout expired while executing transaction)"
+  },
+  "id": 5
+}
+```
